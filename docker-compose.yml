@@ -1,0 +1,14 @@
+# Local n8n for testing the workflow: http://localhost:5678
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=America/Nassau
+      - TZ=America/Nassau
+      - N8N_SECURE_COOKIE=false
+      - N8N_DIAGNOSTICS_ENABLED=false
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+      - ./workflow:/workflow:ro

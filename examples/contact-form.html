@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact us</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input, textarea { width: 100%; padding: 8px; box-sizing: border-box; font: inherit; }
+    button { margin-top: 16px; padding: 10px 18px; font: inherit; cursor: pointer; }
+    /* Honeypot: hidden from humans, bots fill it in */
+    .hp { position: absolute; left: -9999px; }
+    #status { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Get in touch</h1>
+  <form id="contact">
+    <label>Name <input name="name" required maxlength="200"></label>
+    <label>Email <input name="email" type="email" required maxlength="254"></label>
+    <label>Phone <input name="phone" maxlength="50"></label>
+    <label>Company <input name="company" maxlength="200"></label>
+    <label>Message <textarea name="message" rows="5" required maxlength="5000"></textarea></label>
+    <div class="hp" aria-hidden="true">
+      <label>Website <input name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+    <button type="submit">Send</button>
+    <p id="status" role="status"></p>
+  </form>
+
+  <script>
+    // Replace with your n8n production webhook URL and the formSecret from the Config node.
+    const WEBHOOK_URL = 'https://your-n8n.example.com/webhook/contact-form';
+    const FORM_SECRET = 'change-me';
+
+    const form = document.getElementById('contact');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const button = form.querySelector('button');
+      button.disabled = true;
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Form-Secret': FORM_SECRET },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          status.textContent = 'Thanks! We\'ll be in touch shortly — check your inbox.';
+          form.reset();
+        } else {
+          status.textContent = data.error || 'Something went wrong. Please try again.';
+        }
+      } catch {
+        status.textContent = 'Network error. Please try again.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
